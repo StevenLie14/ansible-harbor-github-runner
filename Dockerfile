@@ -1,6 +1,6 @@
 FROM ubuntu:20.04
 
-ENV ANSIBLE_VERSION 11.1.0
+ENV ANSIBLE_VERSION=11.1.0
 
 RUN apt-get update; \
     apt-get install -y gcc python3; \

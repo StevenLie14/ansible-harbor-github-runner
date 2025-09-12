@@ -3,20 +3,24 @@
   become: true
 
   vars:
+    # GitHub repository details (Replace with your repository details)
     repo_url: "https://github.com/StevenLie14/HCI-Zara-Project"
+    runner_name: "hostinger"
+    runner_labels: "hostinger linux-amd64"
+    workdir_service: "/workdir/roles/github-actions-runner/files/runner.service"
 
     runner_version: "2.323.0"
     runner_user: "github-actions-runner"
     runner_group: "github-actions-runner"
     runner_home: "/home/github-actions-runner"
-    runner_name: "hostinger"
-    runner_labels: "hostinger linux-amd64"
     runner_service: "/etc/systemd/system/runner.service"
     runner_package: "actions-runner-linux-x64-{{ runner_version }}.tar.gz"
     runner_url: "https://github.com/actions/runner/releases/download/v{{ runner_version }}/{{ runner_package }}"
     runner_checksum: "sha256:0dbc9bf5a58620fc52cb6cc0448abcca964a8d74b5f39773b7afcad9ab691e19"
 
   tasks:
+    
+        
     - name: Ensure group exists
       group:
         name: "{{ runner_group }}"
@@ -28,6 +32,11 @@
         group: "{{ runner_group }}"
         home: "{{ runner_home }}"
         state: present
+
+    - name: Ensure github-actions-runner uses bash
+      user:
+        name: github-actions-runner
+        shell: /bin/bash
 
     - name: Download GitHub Actions runner tarball with curl
       command: >
@@ -86,11 +95,12 @@
       args:
         chdir: "{{ runner_home }}/actions-runner/"
       when: not runner_credentials_file.stat.exists
+      no_log: true
       become_user: "{{ runner_user }}"
 
     - name: Install runner systemd service
       copy:
-        src: /roles/github-actions-runner/files/runner.service
+        src: "{{ workdir_service }}"
         dest: "{{ runner_service }}"
         owner: root
         group: root

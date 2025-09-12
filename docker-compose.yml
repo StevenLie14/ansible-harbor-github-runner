@@ -10,5 +10,5 @@ services:
     network_mode: host
     tty: true
     volumes:
-      - ./roles:/roles
-    working_dir: /roles
+    - .:/workdir
+    working_dir: /workdir
