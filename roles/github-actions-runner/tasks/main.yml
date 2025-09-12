@@ -1,0 +1,104 @@
+- name: Install and configure GitHub Actions self-hosted runner
+  hosts: target-server
+  become: true
+
+  vars:
+    repo_url: "https://github.com/StevenLie14/HCI-Zara-Project"
+
+    runner_version: "2.323.0"
+    runner_user: "github-actions-runner"
+    runner_group: "github-actions-runner"
+    runner_home: "/home/github-actions-runner"
+    runner_name: "hostinger"
+    runner_labels: "hostinger linux-amd64"
+    runner_service: "/etc/systemd/system/runner.service"
+    runner_package: "actions-runner-linux-x64-{{ runner_version }}.tar.gz"
+    runner_url: "https://github.com/actions/runner/releases/download/v{{ runner_version }}/{{ runner_package }}"
+    runner_checksum: "sha256:0dbc9bf5a58620fc52cb6cc0448abcca964a8d74b5f39773b7afcad9ab691e19"
+
+  tasks:
+    - name: Ensure group exists
+      group:
+        name: "{{ runner_group }}"
+        state: present
+
+    - name: Ensure user exists
+      user:
+        name: "{{ runner_user }}"
+        group: "{{ runner_group }}"
+        home: "{{ runner_home }}"
+        state: present
+
+    - name: Download GitHub Actions runner tarball with curl
+      command: >
+        curl -L -o {{ runner_home }}/{{ runner_package }} {{ runner_url }}
+      args:
+        creates: "{{ runner_home }}/{{ runner_package }}"
+      become: true
+      become_user: "{{ runner_user }}"
+
+    - name: Verify checksum of downloaded file
+      stat:
+        path: "{{ runner_home }}/{{ runner_package }}"
+        checksum_algorithm: sha256
+      register: downloaded_file_stat
+      become: true
+      become_user: "{{ runner_user }}"
+
+    - name: Fail if checksum does not match
+      fail:
+        msg: "Checksum mismatch for {{ runner_package }}. Expected {{ runner_checksum.split(':')[1] }}, but got {{ downloaded_file_stat.stat.checksum }}."
+      when: "downloaded_file_stat.stat.checksum != runner_checksum.split(':')[1]"
+
+    - name: Create directory for extracted runner
+      file:
+        dest: "{{ runner_home }}/actions-runner"
+        owner: "{{ runner_user }}"
+        group: "{{ runner_group }}"
+        state: directory
+      become_user: "{{ runner_user }}"
+
+    - name: Extract GitHub Actions runner
+      unarchive:
+        src: "{{ runner_home }}/{{ runner_package }}"
+        remote_src: true
+        dest: "{{ runner_home }}/actions-runner"
+        owner: "{{ runner_user }}"
+        group: "{{ runner_group }}"
+        creates: "{{ runner_home }}/actions-runner/bin/Run.Listener"
+      become_user: "{{ runner_user }}"
+
+    - name: Check if runner already configured
+      stat:
+        path: "{{ runner_home }}/actions-runner/.credentials"
+      register: runner_credentials_file
+      become_user: "{{ runner_user }}"
+
+    - name: Configure GitHub Actions self-hosted runner
+      shell: |
+        ./config.sh \
+          --url {{ repo_url }} \
+          --pat '{{ lookup("env", "GITHUB_PAT") }}' \
+          --name {{ runner_name }} \
+          --labels '{{ runner_labels }}' \
+          --unattended \
+          --replace
+      args:
+        chdir: "{{ runner_home }}/actions-runner/"
+      when: not runner_credentials_file.stat.exists
+      become_user: "{{ runner_user }}"
+
+    - name: Install runner systemd service
+      copy:
+        src: /roles/github-actions-runner/files/runner.service
+        dest: "{{ runner_service }}"
+        owner: root
+        group: root
+        mode: "0644"
+
+    - name: Start GitHub Actions runner service
+      service:
+        name: runner.service
+        state: started
+        enabled: yes
+        daemon_reload: true

@@ -1,0 +1,16 @@
+[Unit]
+Description = Git Runner
+After = network.target
+
+[Service]
+Type = exec
+ExecStart = /home/github-actions-runner/actions-runner/bin/runsvc.sh
+WorkingDirectory = /home/github-actions-runner/actions-runner/
+User = github-actions-runner
+
+KillMode = process
+KillSignal = SIGTERM
+TimeoutStopSec = 5min
+
+[Install]
+WantedBy = multi-user.target
