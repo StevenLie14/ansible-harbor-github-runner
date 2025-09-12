@@ -1,0 +1,33 @@
+- name: Ensure Docker is installed and get version
+  hosts: target-server
+  become: true
+  
+  tasks:
+    - name: Check Docker version
+      command: docker --version
+      register: docker_version
+      ignore_errors: yes
+
+    - name: Install Docker if not installed
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg
+          - lsb-release
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+        state: present
+        update_cache: yes
+      when: docker_version.failed
+
+    - name: Show Docker version
+      command: docker --version
+      register: docker_version
+      changed_when: false
+
+    - name: Print Docker version
+      debug:
+        var: docker_version.stdout
