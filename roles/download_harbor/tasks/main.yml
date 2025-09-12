@@ -1,0 +1,38 @@
+- name: ensure home directory exists
+  file:
+    path: "{{ home_dir }}"
+    state: directory
+    mode: '0755'
+    owner: admin
+    group: admin
+ 
+- name: ensure artifacts directory exists
+  file:
+    path: "{{ artifact_dir }}"
+    state: directory
+    mode: '0755'
+    owner: admin
+    group: admin
+ 
+- name: download harbor_package
+  get_url:
+    url: "{{ harbor_repo }}/{{ harbor_package }}"
+    dest: "{{ artifact_dir }}/{{ harbor_package }}"
+    mode: '0440'
+    owner: admin
+    group: admin
+ 
+- name: extract harbor_package
+  unarchive:
+    src: "{{ artifact_dir }}/{{ harbor_package }}"
+    dest: "{{ home_dir }}"
+    remote_src: yes
+ 
+- name: ensure home directory permissions updated
+  file:
+    path: "{{ home_dir }}"
+    state: directory
+    mode: '0755'
+    owner: admin
+    group: admin
+    recurse: true

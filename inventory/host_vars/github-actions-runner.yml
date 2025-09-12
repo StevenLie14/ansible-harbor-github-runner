@@ -1,0 +1,14 @@
+# GitHub repository details (Replace with your repository details)
+repo_url: "https://github.com/StevenLie14/HCI-Zara-Project"
+runner_name: "hostinger"
+runner_labels: "hostinger linux-amd64"
+workdir_service: "/workdir/roles/github-actions-runner/files/runner.service"
+
+runner_version: "2.323.0"
+runner_user: "github-actions-runner"
+runner_group: "github-actions-runner"
+runner_home: "/home/github-actions-runner"
+runner_service: "/etc/systemd/system/runner.service"
+runner_package: "actions-runner-linux-x64-{{ runner_version }}.tar.gz"
+runner_url: "https://github.com/actions/runner/releases/download/v{{ runner_version }}/{{ runner_package }}"
+runner_checksum: "sha256:0dbc9bf5a58620fc52cb6cc0448abcca964a8d74b5f39773b7afcad9ab691e19"

@@ -1,0 +1,9 @@
+- hosts: target-server
+  become: true
+  vars_files:
+    - inventory/host_vars/github-actions-runner.yml
+  roles:
+    - role: github-actions-runner
+      tags: runner
+    - role: docker
+      tags: docker
