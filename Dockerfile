@@ -1,13 +1,14 @@
-FROM ubuntu:20.04
+FROM python:3.12-slim
 
-ENV ANSIBLE_VERSION=11.1.0
+ARG ANSIBLE_VERSION=2.19.0
 
-RUN apt-get update; \
-    apt-get install -y gcc python3; \
-    apt-get install -y python3-pip; \
-    apt-get install -y sshpass; \
-    apt-get clean all
+RUN pip install --no-cache-dir ansible-core==${ANSIBLE_VERSION}
 
-RUN pip3 install --upgrade pip; \
-    pip3 install "ansible==${ANSIBLE_VERSION}"; \
-    pip3 install ansible
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    openssh-client \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN ansible-galaxy collection install ansible.posix
+
+CMD ["bash"]
