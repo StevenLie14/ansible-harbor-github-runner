@@ -1,4 +1,3 @@
-# roles/github-actions-runner/tasks/main.yml
 - name: Ensure group exists
   group:
     name: "{{ runner_group }}"
@@ -15,27 +14,17 @@
   user:
     name: "{{ runner_user }}"
     shell: /bin/bash
-
-- name: Download GitHub Actions runner tarball with curl
-  command: >
-    curl -L -o {{ runner_home }}/{{ runner_package }} {{ runner_url }}
-  args:
-    creates: "{{ runner_home }}/{{ runner_package }}"
+  
+- name: Download GitHub Actions software
+  get_url:
+    url: "{{ runner_url }}"
+    dest: "/home/{{ runner_user }}/{{ runner_package }}"
+    mode: "0600"
+    owner: "{{ runner_user }}"
+    group: "{{ runner_group }}"
+    checksum: "{{ runner_checksum }}"
   become: true
   become_user: "{{ runner_user }}"
-
-- name: Verify checksum of downloaded file
-  stat:
-    path: "{{ runner_home }}/{{ runner_package }}"
-    checksum_algorithm: sha256
-  register: downloaded_file_stat
-  become: true
-  become_user: "{{ runner_user }}"
-
-- name: Fail if checksum does not match
-  fail:
-    msg: "Checksum mismatch for {{ runner_package }}. Expected {{ runner_checksum.split(':')[1] }}, but got {{ downloaded_file_stat.stat.checksum }}."
-  when: "downloaded_file_stat.stat.checksum != runner_checksum.split(':')[1]"
 
 - name: Create directory for extracted runner
   file:
