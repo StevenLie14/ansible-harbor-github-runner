@@ -11,4 +11,5 @@ services:
     tty: true
     volumes:
     - .:/workdir
+    - ./templates/harbor.yml.j2:/root/.ansible/roles/robertdebock.harbor/templates/harbor.yml.j2
     working_dir: /workdir

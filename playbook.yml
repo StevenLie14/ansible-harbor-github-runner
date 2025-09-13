@@ -1,9 +1,17 @@
-- hosts: target-server
+- hosts: root-target-server
   become: true
+  tags: [runner]
   vars_files:
     - inventory/host_vars/github-actions-runner.yml
   roles:
     - role: github-actions-runner
       tags: runner
-    - role: docker
-      tags: docker
+    
+- hosts: root-target-server
+  become: true
+  tags: [harbor]
+  vars_files:
+    - inventory/host_vars/harbor.yml   
+  roles:
+    - role: robertdebock.harbor
+      tags: harbor

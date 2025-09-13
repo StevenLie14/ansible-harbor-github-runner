@@ -1,0 +1,3 @@
+harbor_admin_password: "{{ lookup('env', 'HARBOR_ADMIN_PASSWORD') }}"
+harbor_hostname: "{{ lookup('env', 'ANSIBLE_HOST') }}"
+harbor_http_port: "{{ lookup('env', 'HARBOR_HTTP_PORT') }}"
