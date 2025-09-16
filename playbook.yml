@@ -3,9 +3,12 @@
   tags: [runner]
   vars_files:
     - inventory/host_vars/github-actions-runner.yml
+    - inventory/host_vars/github-actions-secret.yml
   roles:
     - role: github-actions-runner
       tags: runner
+    - role: github-actions-secret
+      tags: secret
     
 - hosts: root-target-server
   become: true

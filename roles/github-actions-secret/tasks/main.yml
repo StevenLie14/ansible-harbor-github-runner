@@ -1,0 +1,9 @@
+- name: Set multiple GitHub repository secrets
+  ansible.builtin.shell: >
+    gh secret set {{ item.name }}
+    --body "{{ item.value }}"
+    --repo {{ github_owner }}/{{ github_repo }}
+  loop: "{{ secrets }}"
+  no_log: true
+  environment:
+    GH_TOKEN: "{{ github_token }}"
