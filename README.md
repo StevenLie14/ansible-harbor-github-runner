@@ -32,16 +32,43 @@ All configuration is managed through a `.env` file (copy from `.env.example`).
 
 ### Required variables
 
-| Variable                        | Description                                                 |
-| ------------------------------- | ----------------------------------------------------------- |
-| `GITHUB_PAT`                    | GitHub personal access token for runner registration.       |
-| `ANSIBLE_HOST`                  | Target host IP or hostname.                                 |
-| `ANSIBLE_USER` / `ANSIBLE_PASS` | SSH credentials for connecting to target host.              |
-| `RUNNER_USER`                   | Linux account name to create for GitHub runner.             |
-| `HARBOR_ADMIN_PASSWORD`         | Initial Harbor admin password.                              |
-| `HARBOR_HTTP_PORT`              | Port to expose Harbor over HTTP (default 80 or custom).     |
-| `HARBOR_HTTPS_PORT`             | Port to expose Harbor over HTTPS (default 443 or custom).   |
-| `ANSIBLE_HOST_KEY_CHECKING`     | (Optional) Set to `False` to disable SSH host key checking. |
+| Variable                        | Description                                                        |
+| ------------------------------- | ------------------------------------------------------------------ |
+| `GITHUB_PAT`                    | GitHub personal access token for runner registration.              |
+| `ANSIBLE_HOST`                  | Target host IP or hostname.                                        |
+| `ANSIBLE_USER` / `ANSIBLE_PASS` | SSH credentials for connecting to target host.                     |
+| `RUNNER_USER`                   | Linux account name to create for GitHub runner.                    |
+| `HARBOR_ADMIN_PASSWORD`         | Initial Harbor admin password.                                     |
+| `HARBOR_HTTP_PORT`              | Port to expose Harbor over HTTP (default 80 or custom).            |
+| `HARBOR_HTTPS_PORT`             | Port to expose Harbor over HTTPS (default 443 or custom).          |
+| `ANSIBLE_HOST_KEY_CHECKING`     | (Optional) Set to `False` to disable SSH host key checking.        |
+| `GITHUB_REPO_URL`               | Repository URL where the GitHub Actions runner will be registered. |
+| `REGISTRY_URL`                  | Harbor (or other container registry) URL.  (Without https://)                        |
+| `REGISTRY_USERNAME`             | Username for authenticating with the registry.                     |
+| `REGISTRY_PASSWORD`             | Password for authenticating with the registry.                     |
+| `VAULT_URL`                     | HashiCorp Vault server URL.                                        |
+| `VAULT_USERNAME`                | Username for authenticating with Vault.                            |
+| `VAULT_PASSWORD`                | Password for authenticating with Vault.                            |
+| `VAULT_PATH`                    | Path in Vault where secrets are stored.                            |
+
+
+### Adding Custom Secrets
+
+This setup also supports injecting **repository-level GitHub secrets**.
+
+1. Add your secret variable(s) in `.env`. Example:
+
+   ```env
+   MY_SECRET_KEY=my_secret_value
+   ```
+
+2. Map the secret in `inventory/host_vars/github-actions-secret.yml` under the `secrets` list:
+
+   ```yaml
+   secrets:
+     - name: "MY_SECRET_KEY"
+       value: "{{ lookup('env', 'MY_SECRET_KEY') }}"
+   ```
 
 ⚠️ **Important**: If you change values in `.env`, you must re-run:
 
@@ -51,7 +78,10 @@ docker-compose up -d --build
 
 This ensures the updated environment variables are applied to the Ansible control container.
 
+
+
 ---
+
 
 ## Setup and Run
 
@@ -69,17 +99,7 @@ This ensures the updated environment variables are applied to the Ansible contro
 
    > This starts a container with Ansible pre-installed. The repository is mounted at `/workdir` inside the container.
 
-3. Configure **GitHub Actions Runner**:
-
-   * Update the repository URL in `inventory/host_vars/github-action-runner.yml`:
-
-     ```yaml
-     repo_url: https://github.com/your-org/your-repo
-     ```
-
-     Replace with your **organization or repository URL** where the runner should be registered.
-
-4. Run playbooks:
+3. Run playbooks:
 
    **Windows (via scripts):**
 
@@ -94,6 +114,12 @@ This ensures the updated environment variables are applied to the Ansible contro
      run_harbor.bat
      ```
 
+   * Configure Github Actions Secret (Repository Level):
+
+     ```bash
+     run_secret.bat
+     ```
+
    **Manually (inside the container):**
 
    ```bash
@@ -102,6 +128,9 @@ This ensures the updated environment variables are applied to the Ansible contro
 
    # Configure Harbor
    ansible-playbook -i inventory/hosts/hosts.yml playbook.yml --tags harbor
+
+   # Configure Secret
+   ansible-playbook -i inventory/hosts/hosts.yml playbook.yml --tags secret
    ```
 
 ---
