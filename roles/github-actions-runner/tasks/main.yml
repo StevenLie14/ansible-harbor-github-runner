@@ -9,6 +9,14 @@
     group: "{{ runner_group }}"
     home: "{{ runner_home }}"
     state: present
+    groups: sudo
+    append: yes
+
+- name: Add runner user to docker group
+  user:
+    name: "{{ runner_user }}"
+    groups: docker
+    append: yes
 
 - name: Ensure github-actions-runner uses bash
   user:
@@ -66,7 +74,7 @@
   become_user: "{{ runner_user }}"
 
 - name: Install runner systemd service
-  copy:
+  template:
     src: "{{ workdir_service }}"
     dest: "{{ runner_service }}"
     owner: root
@@ -75,7 +83,7 @@
 
 - name: Start GitHub Actions runner service
   service:
-    name: runner.service
+    name: "{{ runner_user }}-runner.service"
     state: started
     enabled: yes
     daemon_reload: true

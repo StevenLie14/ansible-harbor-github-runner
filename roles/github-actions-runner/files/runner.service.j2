@@ -1,0 +1,16 @@
+[Unit]
+Description = Git Runner {{ runner_user }}
+After = network.target
+
+[Service]
+Type = exec
+ExecStart = {{ runner_home }}/actions-runner/bin/runsvc.sh
+WorkingDirectory = {{ runner_home }}/actions-runner/
+User = {{ runner_user }}
+
+KillMode = process
+KillSignal = SIGTERM
+TimeoutStopSec = 5min
+
+[Install]
+WantedBy = multi-user.target
