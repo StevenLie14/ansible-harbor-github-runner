@@ -16,3 +16,17 @@
 - name: Show Docker version
   debug:
     var: docker_version.stdout
+
+- name: Ensure Docker Compose is installed
+  package:
+    name: docker-compose
+    state: present
+
+- name: Get Docker Compose version
+  command: docker-compose --version
+  register: docker_compose_version
+  changed_when: false
+
+- name: Show Docker Compose version
+  debug:
+    var: docker_compose_version.stdout

@@ -9,6 +9,16 @@
       tags: runner
     - role: github-actions-secret
       tags: secret
+
+- hosts: root-target-server
+  become: true
+  tags: [docker]
+  vars_files:
+    - inventory/host_vars/github-actions-runner.yml
+    - inventory/host_vars/github-actions-secret.yml
+  roles:
+    - role: docker
+      tags: docker
     
 - hosts: root-target-server
   become: true
@@ -17,4 +27,6 @@
     - inventory/host_vars/harbor.yml   
   roles:
     - role: robertdebock.harbor
+      tags: harbor
+    - role: harbor
       tags: harbor
