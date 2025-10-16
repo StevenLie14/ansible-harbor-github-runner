@@ -19,6 +19,16 @@
   roles:
     - role: docker
       tags: docker
+
+- hosts: root-target-server
+  become: true
+  tags: [certbot]
+  vars_files:
+    - inventory/host_vars/github-actions-runner.yml
+    - inventory/host_vars/github-actions-secret.yml
+  roles:
+    - role: certbot
+      tags: certbot
     
 - hosts: root-target-server
   become: true

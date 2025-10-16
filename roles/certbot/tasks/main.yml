@@ -1,0 +1,19 @@
+- name: Ensure APT cache is updated
+  apt:
+    update_cache: yes
+
+- name: Install Certbot and Nginx plugin
+  apt:
+    name:
+      - certbot
+      - python3-certbot-nginx
+    state: present
+
+- name: Verify Certbot installation
+  command: certbot --version
+  register: certbot_version
+  changed_when: false
+
+- name: Show installed Certbot version
+  debug:
+    msg: "Installed Certbot version: {{ certbot_version.stdout }}"
